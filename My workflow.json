@@ -1,0 +1,142 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -416,
+        0
+      ],
+      "id": "4128e5f3-c854-4d39-b118-4864a438dc64",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://api.open-meteo.com/v1/forecast?latitude=26.0667&longitude=50.5577&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia%2FBahrain",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -192,
+        0
+      ],
+      "id": "66d01f74-d326-4642-9fc1-4490beb6254b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "models/gemini-3-flash-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Create a clean daily weather report as HTML.\n\nUse an HTML table for the schedule.\n\nThe output MUST be raw HTML only. Do NOT use Markdown. Do NOT use ```html or code blocks.\n\nUse this structure:\n\n<h2>🌤️ DAILY WEATHER REPORT</h2>\n<p>📅 Date: [date]</p>\n\n<table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">\n<tr>\n<th>Time</th>\n<th>Weather</th>\n<th>Temperature</th>\n</tr>\n<tr>\n<td>Morning</td>\n<td>[condition]</td>\n<td>[temperature]°C</td>\n</tr>\n<tr>\n<td>Afternoon</td>\n<td>[condition]</td>\n<td>[temperature]°C</td>\n</tr>\n<tr>\n<td>Evening</td>\n<td>[condition]</td>\n<td>[temperature]°C</td>\n</tr>\n<tr>\n<td>Night</td>\n<td>[condition]</td>\n<td>[temperature]°C</td>\n</tr>\n</table>\n\n<p>🌡️ <b>Current:</b> [temperature]°C</p>\n<p>🥵 <b>Feels like:</b> [feels like]°C</p>\n<p>💨 <b>Wind:</b> [wind speed] km/h</p>\n\n<h3>👕 RECOMMENDATION</h3>\n<p>[short recommendation]</p>\n\nUse the actual weather data provided below.\n{{ \"Weather data: \" + JSON.stringify($json) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        0
+      ],
+      "id": "a8ac1f9a-dbe7-47c2-b34b-d7af3c7a2c1e",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ilMUDNCH8nrHtaB9",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "deenadarwish00@gmail.com",
+        "subject": "Daily Weather Report",
+        "message": "={{$json.content.parts[0].text}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        0
+      ],
+      "id": "4c23d017-a0a6-4d7c-ade1-0039b1c62db6",
+      "name": "Send a message",
+      "webhookId": "a561581d-eea9-439b-8ee1-042310e05f2f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gT7qHD6vDKoY4Aua",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "3e0a5982-e655-464f-80b5-e087e55c5b79",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "971cb46c6816fecd10ac49dac09599cc403a5799483dbd4740d4956373444232"
+  },
+  "nodeGroups": [],
+  "id": "9oZaHF8UDT6IhffJ",
+  "tags": []
+}
